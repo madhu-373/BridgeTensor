@@ -27,7 +27,7 @@ bool TensorBase::is_contiguous() const {
 
 void* TensorBase::data_ptr() const {
     if (!defined()) return nullptr;
-    return static_cast<char*>(impl_->storage().data()) + impl_->storage_offset() * dtype_size();
+    return static_cast<char*>(impl_->storage().mutable_data()) + impl_->storage_offset() * dtype_size();
 }
 
 bool TensorBase::requires_grad() const {

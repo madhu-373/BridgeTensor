@@ -231,11 +231,11 @@ void Tensor::display() const {
 }
 
 size_t Tensor::allocated_bytes() const {
-    return impl_->storage().size_bytes();
+    return impl_->storage().nbytes();
 }
 
 bool Tensor::owns_data() const {
-    return impl_->storage().impl.get()->use_count() == 1;
+    return impl_->storage().unique();
 }
 
 } // namespace OwnTensor
