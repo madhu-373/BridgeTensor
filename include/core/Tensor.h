@@ -2,8 +2,14 @@
 
 #include "TensorBase.h"
 #include "Scalar.h"
+#include <memory>
 
 namespace OwnTensor {
+
+// Forward declarations
+class Node;
+class FunctionPreHook;
+class PostAccumulateGradHook;
 
 /**
  * @brief The main user-facing Tensor class.
@@ -50,6 +56,27 @@ public:
     // Autograd
     void set_requires_grad(bool requires_grad);
     void set_grad(const Tensor& grad);
+    
+    // View tracking
+    bool is_view() const;
+    void set_is_view(bool is_view);
+    
+    // Gradient function
+    std::shared_ptr<Node> grad_fn() const;
+    void set_grad_fn(std::shared_ptr<Node> fn);
+    
+    // Output number (for multi-output operations)
+    uint32_t output_nr() const;
+    void set_output_nr(uint32_t nr);
+    
+    // Gradient retention (for non-leaves)
+    bool retains_grad() const;
+    void set_retains_grad(bool retains);
+    
+    // Hooks
+    void register_hook(std::unique_ptr<FunctionPreHook> hook);
+    void register_post_acc_hook(std::unique_ptr<PostAccumulateGradHook> hook);
+    void clear_hooks();
 
     // Information
     size_t allocated_bytes() const;

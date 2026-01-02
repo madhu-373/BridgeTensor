@@ -1,4 +1,7 @@
 #include "core/Tensor.h"
+#include "core/AutogradMeta.h"
+#include "autograd/Node.h"
+#include "autograd/Hooks.h"
 #include "dtype/DtypeTraits.h"
 #include "device/DeviceTransfer.h"
 #include "device/AllocatorRegistry.h"
@@ -131,7 +134,7 @@ void Tensor::set_requires_grad(bool requires_grad) {
         if (!requires_grad) return;
         impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(requires_grad)));
     } else {
-        static_cast<AutogradMeta*>(impl_->autograd_meta())->requires_grad = requires_grad;
+        impl_->autograd_meta()->set_requires_grad(requires_grad, impl_.get());
     }
 }
 
@@ -140,7 +143,79 @@ void Tensor::set_grad(const Tensor& grad) {
         impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(true)));
     }
     auto meta = static_cast<AutogradMeta*>(impl_->autograd_meta());
-    meta->grad = std::make_shared<TensorBase>(grad);
+    meta->grad_ = std::make_shared<TensorBase>(grad);
+}
+
+// View tracking
+bool Tensor::is_view() const {
+    if (!impl_->autograd_meta()) return false;
+    return static_cast<AutogradMeta*>(impl_->autograd_meta())->is_view();
+}
+
+void Tensor::set_is_view(bool is_view) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->set_is_view(is_view);
+}
+
+// Gradient function
+std::shared_ptr<Node> Tensor::grad_fn() const {
+    if (!impl_->autograd_meta()) return nullptr;
+    return static_cast<AutogradMeta*>(impl_->autograd_meta())->grad_fn();
+}
+
+void Tensor::set_grad_fn(std::shared_ptr<Node> fn) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->set_grad_fn(std::move(fn));
+}
+
+// Output number
+uint32_t Tensor::output_nr() const {
+    if (!impl_->autograd_meta()) return 0;
+    return static_cast<AutogradMeta*>(impl_->autograd_meta())->output_nr();
+}
+
+void Tensor::set_output_nr(uint32_t nr) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->set_output_nr(nr);
+}
+
+// Gradient retention
+bool Tensor::retains_grad() const {
+    if (!impl_->autograd_meta()) return false;
+    return static_cast<AutogradMeta*>(impl_->autograd_meta())->retains_grad();
+}
+
+void Tensor::set_retains_grad(bool retains) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->set_retains_grad(retains);
+}
+
+// Hooks
+void Tensor::register_hook(std::unique_ptr<FunctionPreHook> hook) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->add_hook(std::move(hook));
+}
+
+void Tensor::register_post_acc_hook(std::unique_ptr<PostAccumulateGradHook> hook) {
+    if (!impl_->autograd_meta()) {
+        impl_->set_autograd_meta(std::unique_ptr<AutogradMetaInterface>(new AutogradMeta(false)));
+    }
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->set_post_acc_hook(std::move(hook));
+}
+
+void Tensor::clear_hooks() {
+    if (!impl_->autograd_meta()) return;
+    static_cast<AutogradMeta*>(impl_->autograd_meta())->clear_hooks();
 }
 
 size_t Tensor::grad_nbytes() const { 

@@ -32,14 +32,14 @@ void* TensorBase::data_ptr() const {
 
 bool TensorBase::requires_grad() const {
     if (!defined() || !impl_->autograd_meta()) return false;
-    return static_cast<AutogradMeta*>(impl_->autograd_meta())->requires_grad;
+    return impl_->autograd_meta()->requires_grad();
 }
 
 TensorBase TensorBase::grad() const {
     if (!defined() || !impl_->autograd_meta()) return TensorBase();
-    auto meta = static_cast<AutogradMeta*>(impl_->autograd_meta());
-    if (!meta->grad) return TensorBase();
-    return *(meta->grad);
+    const TensorBase& g = impl_->autograd_meta()->grad();
+    if (!g.defined()) return TensorBase();
+    return g;
 }
 
 } // namespace OwnTensor
