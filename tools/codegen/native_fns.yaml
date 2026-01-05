@@ -1,0 +1,53 @@
+cpp_namespace: OwnTensor
+common_headers:
+  - "core/Tensor.h"
+  - "core/Scalar.h"
+
+functions:
+  - func: add(Tensor self, Tensor other) -> Tensor
+    variants: [function, method]
+    dispatch:
+      CPU: add_cpu
+      CUDA: add_cuda
+
+  - func: sub(Tensor self, Tensor other) -> Tensor
+    variants: [function, method]
+    dispatch:
+      CPU: sub_cpu
+      CUDA: sub_cuda
+
+  - func: mul(Tensor self, Tensor other) -> Tensor
+    variants: [function, method]
+    dispatch:
+      CPU: mul_cpu
+      CUDA: mul_cuda
+
+  - func: matmul(Tensor self, Tensor other) -> Tensor
+    variants: [function, method]
+    dispatch:
+      CPU: matmul_cpu
+      CUDA: matmul_cuda
+
+  - func: relu(Tensor self) -> Tensor
+    variants: [function, method]
+    dispatch:
+      CPU: relu_cpu
+      CUDA: relu_cuda
+
+  - func: gt(Tensor self, Tensor other) -> Tensor  
+    variants: [function, method]
+    dispatch:
+      CPU: gt_cpu
+      CUDA: gt_cuda
+
+  - func: lt(Tensor self, Tensor other) -> Tensor 
+    variants: [function, method]
+    dispatch:
+      CPU: lt_cpu
+      CUDA: lt_cuda
+
+  - func: eq(Tensor self, Tensor other) -> Tensor 
+    variants: [function, method]
+    dispatch:
+      CPU: eq_cpu
+      CUDA: eq_cuda

@@ -1,0 +1,21 @@
+
+
+- name: add(Tensor self, Tensor other) -> Tensor
+  self: grad
+  other: grad
+
+- name: sub(Tensor self, Tensor other) -> Tensor
+  self: grad
+  other: -grad
+
+- name: mul(Tensor self, Tensor other) -> Tensor
+  self: grad * other
+  other: grad * self
+
+- name: matmul(Tensor self, Tensor other) -> Tensor
+  self: grad.matmul(other.t())
+  other: self.t().matmul(grad)
+
+- name: relu(Tensor self) -> Tensor
+  self: grad * (self > 0)
+
